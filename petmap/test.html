@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Show Only Animal or Pet Hospitals on Google Maps</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
+    <script>
+      function initMap() {
+        // 自訂地圖樣式，隱藏所有不需要的地標
+        const mapStyle = [
+          {
+            "featureType": "poi",
+            "stylers": [{ "visibility": "off" }] // 隱藏所有地標
+          }
+        ];
+
+        // 創建地圖，應用自訂樣式
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 25.033, lng: 121.5654 }, // 台北位置
+          zoom: 14,
+          styles: mapStyle,
+          disableDefaultUI: true,
+        });
+
+        
+      }
+    </script>
+  </head>
+  <body onload="initMap()">
+    <div id="map" style="height: 80vh; width: 100%;"></div>
+  </body>
+</html>
