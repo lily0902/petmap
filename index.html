@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW"> 
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 設定視窗大小自適應 -->
+    <title>午餐吃什麼</title> 
+</head> 
+<body style="margin:0;"> 
+    <div style="display: flex; flex-direction: column;"> 
+        <!-- 地圖區塊 -->
+        <div id="map" style="width:100%; height: 80vh">
+            
+        </div> <!-- 地圖佔螢幕一半，並設高為100vh（全螢幕高度） -->
+        <div style="padding:16px;"> <!-- 設定內部間距 -->
+            <input type="text" id="search-input" > <!-- 搜尋框，讓使用者輸入餐廳名稱 -->
+        </div>
+
+        
+    </div>
+
+    <script>
+        let map; // 地圖物件
+        let currentPosition; // 儲存使用者當前位置
+        let selectRestaurant; // 儲存選擇的餐廳資訊
+        let marker; // 標示選定餐廳位置的標記
+        let directionsService; // Google Maps Directions API，用於查詢路線
+        let directionsRenderer; // 用來顯示路線的物件
+        let infoWindow; // 彈出視窗，顯示餐廳資訊
+
+        function initMap() {
+            // 建立地圖，預設中心位置為台灣某處（23.553118, 121.0211024），縮放等級為7
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 23.553118, lng: 121.0211024}, // 台灣大致中心經緯度
+                zoom: 7, // 地圖縮放程度
+            });
+
+            // 取得使用者當前位置
+            navigator.geolocation.getCurrentPosition(function(position) {
+                // 儲存當前位置的經緯度
+                currentPosition = {
+                    lat: position.coords.latitude, 
+                    lng: position.coords.longitude
+                };
+                map.setCenter(currentPosition); // 將地圖中心設置為使用者當前位置
+                map.setZoom(18); // 縮放地圖到18級，顯示更細緻的區域
+
+                // 啟用自動完成功能，讓使用者輸入時獲得餐廳建議
+                const autocomplete = new google.maps.places.Autocomplete(
+                    document.getElementById('search-input'), // 搜尋框
+                    {
+                        types: ['restaurant'], // 搜尋類型限定為餐廳
+                        bounds: { // 限制搜尋範圍為使用者周圍
+                            north: currentPosition.lat + 0.001,
+                            south: currentPosition.lat - 0.001,
+                            east: currentPosition.lng + 0.001,
+                            west: currentPosition.lng - 0.001,
+                        },
+                        strictBounds: false, // 不嚴格限制在範圍內，可出現範圍外的地標
+                    }
+                );
+
+                // 當使用者選擇建議中的餐廳時觸發此事件
+                autocomplete.addListener('place_changed', function() {
+                    const place = autocomplete.getPlace(); // 獲取選擇的地點
+                    // 將餐廳的各項資訊儲存到selectRestaurant
+                    selectRestaurant = {
+                        location: place.geometry.location, // 餐廳位置
+                        placeId: place.place_id, // 餐廳的Google Place ID
+                        name: place.name, // 餐廳名稱
+                        address: place.formatted_address, // 餐廳地址
+                        phoneNumber: place.formatted_phone_number, // 餐廳電話號碼
+                        rating: place.rating, // 餐廳評分
+                    };
+                    
+                    // 將地圖中心設為選定的餐廳位置
+                    map.setCenter(selectRestaurant.location);
+
+                    // 如果還沒有標記，就建立一個
+                    if (!marker) {
+                        marker = new google.maps.Marker({
+                            map: map, // 指定標記顯示的地圖
+                        });
+                    }
+
+                    // 將標記設置到餐廳的位置
+                    marker.setPosition(selectRestaurant.location);
+
+                    // 如果還沒初始化DirectionsService，則進行初始化
+                    if (!directionsService) {
+                        directionsService = new google.maps.DirectionsService();
+                    }
+
+                    // 如果還沒初始化DirectionsRenderer，則進行初始化
+                    if (!directionsRenderer) {
+                        directionsRenderer = new google.maps.DirectionsRenderer({
+                            map: map, // 指定將路線繪製到哪個地圖
+                        });
+                    }
+
+                    // 清空之前的路線
+                    directionsRenderer.set('directions', null);
+
+                    // 請求步行路線
+                    directionsService.route({
+                        origin: new google.maps.LatLng(currentPosition.lat, currentPosition.lng), // 起點為使用者當前位置
+                        destination: { placeId: selectRestaurant.placeId }, // 終點為選定餐廳
+                        travelMode: 'WALKING', // 使用步行模式
+                    },
+                    function(response, status) {
+                        // 如果請求成功
+                        if (status === 'OK') {
+                            directionsRenderer.setDirections(response); // 在地圖上顯示路線
+
+                            // 如果還沒建立InfoWindow，則進行初始化
+                            if (!infoWindow) {
+                                infoWindow = new google.maps.InfoWindow();
+                            }
+
+                            // 設置彈出的資訊視窗，顯示餐廳資訊與步行時間
+                            infoWindow.setContent(`
+                                <h3>${selectRestaurant.name}</h3>
+                                <div>地址: ${selectRestaurant.address}</div>
+                                <div>電話: ${selectRestaurant.phoneNumber || '無資料'}</div>
+                                <div>評分: ${selectRestaurant.rating || '無評分'}</div>
+                                <div>步行時間: ${response.routes[0].legs[0].duration.text}</div>
+                            `);
+
+                            // 在標記處打開資訊視窗
+                            infoWindow.open(map, marker);
+                        } else {
+                            // 如果請求失敗，顯示錯誤訊息
+                            alert('Directions request failed due to ' + status);
+                        }
+                    });
+                });
+            });
+        }
+    </script> 
+    <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCuD6CPQGJopN6uN1CdVqzOOm4oREHqyp8&loading=async&libraries=places&callback=initMap&region=TW&language=zh-TW">
+    </script>
+</body>
+</html>
