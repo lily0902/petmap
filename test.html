@@ -122,6 +122,7 @@
                                 <div>電話: ${selectedHospital.phoneNumber || '無資料'}</div>
                                 <div>評分: ${selectedHospital.rating || '無評分'}</div>
                                 <div>步行時間: ${response.routes[0].legs[0].duration.text}</div>
+                                <div><a href="https://www.google.com/maps/place/?q=place_id:${selectedHospital.placeId}" target="_blank">在 Google 上查看</a></div>
                             `);
 
                             // 在標記處打開資訊視窗
@@ -142,3 +143,4 @@
            style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 300px; padding: 8px; z-index: 5;"> 
 </body>
 </html>
+
