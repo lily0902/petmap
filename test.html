@@ -1,35 +1,144 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Show Only Animal or Pet Hospitals on Google Maps</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
     <script>
-      function initMap() {
-        // 自訂地圖樣式，隱藏所有不需要的地標
-        const mapStyle = [
-          {
-            "featureType": "poi",
-            "stylers": [{ "visibility": "off" }] // 隱藏所有地標
-          }
-        ];
+        let map; // 地圖物件  
+        let currentPosition; // 儲存使用者當前位置  
+        let selectedHospital; // 儲存選擇的寵物醫院資訊  
+        let marker; // 標示選定寵物醫院位置的標記 
+        let directionsService; // Google Maps Directions API，用於查詢路線 
+        let directionsRenderer; // 用來顯示路線的物件 
+        let infoWindow; // 彈出視窗，顯示寵物醫院資訊 
 
-        // 創建地圖，應用自訂樣式
-        const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 25.033, lng: 121.5654 }, // 台北位置
-          zoom: 14,
-          styles: mapStyle,
-          disableDefaultUI: true,
-        });
+        function initMap() {
+            // 自訂地圖樣式，隱藏所有不需要的地標 
+            const mapStyle = [
+                {
+                    "featureType": "poi.business", // 隱藏商業地標
+                    "stylers": [{ "visibility": "off" }] 
+                },
+                {
+                    "featureType": "poi", // 隱藏其他地標
+                    "stylers": [{ "visibility": "off" }]
+                }
+            ];
 
-        
-      }
+            // 建立地圖，預設中心位置為台灣某處（23.553118, 121.0211024），縮放等級為7 
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 23.553118, lng: 121.0211024 }, // 台灣大致中心經緯度 
+                zoom: 7, // 地圖縮放程度 
+                styles: mapStyle, // 自訂地圖樣式 
+                disableDefaultUI: true,
+            });
+
+            // 取得使用者當前位置 
+            navigator.geolocation.getCurrentPosition(function(position) {
+                // 儲存當前位置的經緯度
+                currentPosition = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(currentPosition); // 將地圖中心設置為使用者當前位置
+                map.setZoom(18); // 縮放地圖到18級，顯示更細緻的區域
+
+                // 啟用自動完成功能，讓使用者輸入時獲得寵物醫院建議 
+                const autocomplete = new google.maps.places.Autocomplete(
+                    document.getElementById('search-input'), // 搜尋框 
+                    {
+                        types: ['veterinary_care'], // 搜尋類型限定為寵物醫院
+                        bounds: { // 限制搜尋範圍為使用者周圍
+                            north: currentPosition.lat + 0.001,
+                            south: currentPosition.lat - 0.001,
+                            east: currentPosition.lng + 0.001,
+                            west: currentPosition.lng - 0.001,
+                        },
+                        strictBounds: false, // 不嚴格限制在範圍內，可出現範圍外的地標
+                    }
+                );
+
+                // 當使用者選擇建議中的寵物醫院時觸發此事件
+                autocomplete.addListener('place_changed', function() {
+                    const place = autocomplete.getPlace(); // 獲取選擇的地點
+                    // 將寵物醫院的各項資訊儲存到 selectedHospital
+                    selectedHospital = {
+                        location: place.geometry.location, // 寵物醫院位置
+                        placeId: place.place_id, // 寵物醫院的Google Place ID
+                        name: place.name, // 寵物醫院名稱
+                        address: place.formatted_address, // 寵物醫院地址
+                        phoneNumber: place.formatted_phone_number, // 寵物醫院電話號碼
+                        rating: place.rating, // 寵物醫院評分
+                    };
+
+                    // 將地圖中心設為選定的寵物醫院位置
+                    map.setCenter(selectedHospital.location);
+
+                    // 如果還沒有標記，就建立一個
+                    if (!marker) {
+                        marker = new google.maps.Marker({
+                            map: map, // 指定標記顯示的地圖
+                        });
+                    }
+
+                    // 將標記設置到寵物醫院的位置
+                    marker.setPosition(selectedHospital.location);
+
+                    // 如果還沒初始化DirectionsService，則進行初始化
+                    if (!directionsService) {
+                        directionsService = new google.maps.DirectionsService();
+                    }
+
+                    // 如果還沒初始化DirectionsRenderer，則進行初始化
+                    if (!directionsRenderer) {
+                        directionsRenderer = new google.maps.DirectionsRenderer({
+                            map: map, // 指定將路線繪製到哪個地圖
+                        });
+                    }
+
+                    // 清空之前的路線
+                    directionsRenderer.set('directions', null);
+
+                    // 請求步行路線
+                    directionsService.route({
+                        origin: new google.maps.LatLng(currentPosition.lat, currentPosition.lng), // 起點為使用者當前位置
+                        destination: { placeId: selectedHospital.placeId }, // 終點為選定寵物醫院
+                        travelMode: 'WALKING', // 使用步行模式
+                    },
+                    function(response, status) {
+                        // 如果請求成功
+                        if (status === 'OK') {
+                            directionsRenderer.setDirections(response); // 在地圖上顯示路線
+
+                            // 如果還沒建立InfoWindow，則進行初始化
+                            if (!infoWindow) {
+                                infoWindow = new google.maps.InfoWindow();
+                            }
+
+                            // 設置彈出的資訊視窗，顯示寵物醫院資訊與步行時間
+                            infoWindow.setContent(`
+                                <h3>${selectedHospital.name}</h3>
+                                <div>地址: ${selectedHospital.address}</div>
+                                <div>電話: ${selectedHospital.phoneNumber || '無資料'}</div>
+                                <div>評分: ${selectedHospital.rating || '無評分'}</div>
+                                <div>步行時間: ${response.routes[0].legs[0].duration.text}</div>
+                            `);
+
+                            // 在標記處打開資訊視窗
+                            infoWindow.open(map, marker);
+                        } else {
+                            // 如果請求失敗，顯示錯誤訊息
+                            alert('Directions request failed due to ' + status);
+                        }
+                    });
+                });
+            });
+        }
     </script>
-  </head>
-  <body onload="initMap()">
-    <div id="map" style="height: 80vh; width: 100%; display: flex; flex-direction: column; box-sizing: border-box;">
-      <div style="padding: 16px;"> 
-        <input type="text" id="search-input" > <!-- 搜尋框，讓使用者輸入餐廳名稱 -->
-      </div>
-    </div>
-  </body>
+</head>
+<body onload="initMap()">
+    <div id="map" style="height: 80vh; width: 100%;"></div>
+    <input id="search-input" type="text" placeholder="搜尋寵物醫院" 
+           style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 300px; padding: 8px; z-index: 5;"> 
+</body>
 </html>
