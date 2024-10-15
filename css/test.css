@@ -74,7 +74,7 @@ body{
     border: 2px solid transparent;
     border-radius: 8px;
     outline: none;
-    background-color: #f3f3f4;
+    background-color: #fff7f0;
     color: #0d0c22;
     transition: 0.3s ease;
   }
@@ -86,9 +86,9 @@ body{
   .input:focus,
   input:hover {
     outline: none;
-    border-color: rgba(0, 48, 73, 0.4);
+    border-color: #ffdbb4;
     background-color: #fff;
-    box-shadow: 0 0 0 4px rgb(0 48 73 / 10%);
+    box-shadow: 0 0 0 4px rgb(255	219	180 / 50%);
   }
   
   .icon {
