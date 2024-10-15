@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Show Only Animal or Pet Hospitals on Google Maps</title>
+    <link href="css/test.css" rel="stylesheet">
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
     <script>
         let map; // 地圖物件  
@@ -141,45 +142,24 @@
             alert("按下了 " + buttonId + " 按鈕");
         }
     </script>
-    <style>
-        .button {
-            background-color: #4CAF50; /* 綠色背景 */
-            border: none;
-            color: white; /* 白色字 */
-            padding: 15px 20px; /* 上下左右的內邊距 */
-            text-align: center; /* 文字置中 */
-            text-decoration: none; /* 無底線 */
-            display: inline-block; /* 內聯塊元素 */
-            font-size: 16px; /* 字體大小 */
-            margin: 4px 2px; /* 外邊距 */
-            cursor: pointer; /* 鼠標變為手型 */
-            border-radius: 5px; /* 邊角圓滑 */
-        }
-        .button_upload{
-          background-image:url('img/add.png');
-          background-size: contain;
-          border: none;
-          color: white; /* 白色字 */
-          padding: 0px; /* 上下左右的內邊距 */
-          text-align: center; /* 文字置中 */
-          text-decoration: none; /* 無底線 */
-          display: inline-block; /* 內聯塊元素 */
-          cursor: pointer; /* 鼠標變為手型 */
-          border-radius: 100%; /* 邊角圓滑 */
-          width:40px;
-          height:40px;
-      }
-    </style>
 </head>
-<body onload="initMap()" style="margin: 0; padding: 0;">
-    <div id="map" style="height: 100vh; width: 100%; margin: 0; padding: 0;"></div>
-    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5;">
-        <input id="search-input" type="text" placeholder="搜尋寵物醫院" style="width: 300px; padding: 8px;">
-        <button onclick="initMap()" class="button">搜尋</button>
+<body onload="initMap()" >
+    <div id="map" class="map"></div>
+
+    <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+          <g>
+            <path
+              d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"
+            ></path>
+          </g>
+        </svg>
+        <input class="input" type="search" placeholder="Search"  id="search-input"/>
     </div>
+      
     
     <!-- 右下方按鈕 -->
-    <div style="position: fixed; bottom: 10px; right: 1%; z-index: 5;">
+    <div class="buttons">
         <button class="button" onclick="buttonAction('按鈕1')">按鈕1</button>
         <button class="button" onclick="buttonAction('按鈕2')">按鈕2</button>
         <button class="button" onclick="buttonAction('按鈕3')">按鈕3</button>
@@ -187,8 +167,11 @@
         <button class="button" onclick="buttonAction('按鈕5')">按鈕5</button>
     </div>
 
-    <div style="position:fixed; top:20px; right: 1%; ">
-      <button class="button_upload" onclick="buttonAction('按鈕1')"></button>
+    <div class="upload">
+       <button class="button_upload" onclick="buttonAction('按鈕1')"></button>
     </div>
+
+    
+    
 </body>
 </html>
