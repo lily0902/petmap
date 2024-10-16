@@ -16,22 +16,6 @@ body{
     cursor: pointer; /* 鼠標變為手型 */
     border-radius: 5px; /* 邊角圓滑 */
 }
-.button_upload{
-  background-image:url('img/add.png');
-  background-size: contain;
-  border: none;
-  color: white; /* 白色字 */
-  padding: 0px; /* 上下左右的內邊距 */
-  text-align: center; /* 文字置中 */
-  text-decoration: none; /* 無底線 */
-  display: inline-block; /* 內聯塊元素 */
-  cursor: pointer; /* 鼠標變為手型 */
-  border-radius: 100%; /* 邊角圓滑 */
-  width:40px;
-  height:40px;
-}
-
-
 
 .map{
     height: 100vh; 
@@ -40,7 +24,6 @@ body{
     padding: 0;
 }
 
-
 .buttons{
     position: fixed; 
     bottom: 10px; 
@@ -48,22 +31,17 @@ body{
     z-index: 5;
 }
 
-.upload{
-    position:fixed; 
-    top:20px; 
-    right: 1%;  
-}
-
-
 /* From Uiverse.io by LightAndy1 */ 
 .search {
     display: flex;
+    margin:auto;
+    position: fixed;
+    justify-content: center;
     line-height: 28px;
     align-items: center;
-    position: absolute;
-    width: 300px;
+    width: 500px;
     top: 10px; 
-    right: 45%; 
+    left:40%;
     z-index: 5;
   }
   
@@ -132,3 +110,38 @@ body{
    }
    
    
+   .add-button {
+    cursor: pointer;
+    outline: none;
+    transition: transform 0.3s ease;
+    border:none;
+    background-color: transparent;
+    position:fixed; 
+    top:20px; 
+    right: 1%;  
+  }
+  
+  .add-button:hover {
+    transform: rotate(90deg);
+  }
+  
+  .svg-icon {
+    stroke: #f97316; /* orange-400 */
+    fill: white;
+    transition: fill 0.3s ease;
+  }
+  
+  .add-button:hover .svg-icon {
+    fill: #ffdbb4; /* orange-800 */
+  }
+  
+  .add-button:active .svg-icon {
+    stroke: #fed7aa; /* orange-200 */
+    fill: #fb923c; /* orange-600 */
+    transition-duration: 0s;
+  }
+  
+  .svg-icon path {
+    stroke-width: 1.5;
+  }
+  
