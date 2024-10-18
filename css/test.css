@@ -117,7 +117,7 @@ body{
     border:none;
     background-color: transparent;
     position:fixed; 
-    top:20px; 
+    top:10px; 
     right: 1%;  
   }
   
@@ -145,3 +145,16 @@ body{
     stroke-width: 1.5;
   }
   
+  .back {
+    cursor: pointer;
+    outline: none;
+    border:none;
+    position:fixed; 
+    top:10px; 
+    left: 1%;  
+    background-image: url('../img/back.png');
+    background-size: cover;
+    width: 50px;
+    height:50px;
+    background-color: transparent;
+  }
