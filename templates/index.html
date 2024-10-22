@@ -5,6 +5,54 @@
     <link href="../static/css/index.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
+    <style>
+        #infoPanel {
+            position: fixed; /* 固定在螢幕上方 */
+            top: 0;
+            left: -350px; /* 初始位置完全在螢幕外 */
+            width: 350px; /* 設定資訊面板的寬度 */
+            height: 100%; /* 高度為螢幕的高度 */
+            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            border-right: 1px solid #ccc; /* 右邊框線 */
+            overflow-y: auto; /* 當內容過多時顯示滾動條 */
+            z-index: 1; /* 保持面板在地圖之上 */
+            padding: 20px; /* 面板內的填充距離 */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* 添加陰影效果 */
+            transition: transform 0.5s ease-in-out; /* 添加滑動顯示的動畫效果 */
+            transform: translateX(-100%); /* 初始狀態下將面板隱藏 */
+        }
+        /* 資訊面板滑入螢幕時的狀態 */
+        #infoPanel.show {
+            transform: translateX(350px); /* 顯示時將面板滑入螢幕左側 */
+        }
+        /* 設置標題的樣式 */
+        h2 {
+            margin-top: 0;
+            font-size: 1.5em; /* 調整標題大小 */
+            color: #333;
+        }
+        /* 資訊面板中每個項目的樣式 */
+        .place-info {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px; /* 添加圓角 */
+            background-color: #f9f9f9;
+        }
+        /* 關閉按鈕的樣式設置 */
+        .close-btn {
+            cursor: pointer; /* 鼠標變成手指形狀 */
+            color: #d9534f; /* 紅色關閉按鈕 */
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: center; /* 按鈕置中 */
+            text-decoration: underline; /* 添加下劃線 */
+        }
+        .close-btn:hover {
+            color: #c9302c; /* 滑鼠懸停時按鈕顏色變深 */
+        }
+    </style>
     <script>
         let map; // 地圖物件  
         let currentPosition; // 儲存使用者當前位置  
@@ -13,6 +61,12 @@
         let directionsService; // Google Maps Directions API，用於查詢路線 
         let directionsRenderer; // 用來顯示路線的物件 
         let infoWindow; // 彈出視窗，顯示寵物醫院資訊 
+        let infoPanel;
+// 關閉資訊面板
+function closeInfoPanel() {
+    const infoPanel = document.getElementById('infoPanel')
+    infoPanel.classList.remove('show'); // 移除顯示狀態，隱藏資訊面板
+}
 
         function initMap() {
             // 自訂地圖樣式，隱藏所有不需要的地標 
@@ -26,6 +80,8 @@
                     "stylers": [{ "visibility": "off" }]
                 }
             ];
+
+            infoPanel = document.getElementById('infoPanel');// 獲取資訊面板元素
 
             // 建立地圖，預設中心位置為台灣某處（23.553118, 121.0211024），縮放等級為7 
             map = new google.maps.Map(document.getElementById('map'), {
@@ -45,6 +101,13 @@
                 map.setCenter(currentPosition); // 將地圖中心設置為使用者當前位置
                 map.setZoom(18); // 縮放地圖到18級，顯示更細緻的區域
 
+                const service = new google.maps.places.PlacesService(map);
+                const request = {
+                    location: { lat: currentPosition.lat, lng: currentPosition.lng }, // 搜尋範圍的中心點（台灣）
+                    radius: '50000', // 搜尋半徑，單位：米
+                    keyword: '寵物醫院' // 搜尋關鍵字
+                };
+
                 // 啟用自動完成功能，讓使用者輸入時獲得寵物醫院建議 
                 const autocomplete = new google.maps.places.Autocomplete(
                     document.getElementById('search-input'), // 搜尋框 
@@ -59,6 +122,79 @@
                         strictBounds: false, // 不嚴格限制在範圍內，可出現範圍外的地標
                     }
                 );
+
+                // 根據請求結果創建標記
+            service.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    for (let i = 0; i < results.length; i++) {
+                        createMarker(results[i]); // 對每個搜尋結果創建標記
+                    }
+                }
+            });
+
+            // 創建地圖上的標記並綁定點擊事件
+        function createMarker(place) {
+            const marker = new google.maps.Marker({
+                map: map, // 地圖實例
+                position: place.geometry.location, // 標記位置
+                title: place.name // 標記的標題（顯示於滑鼠懸停時）
+            });
+
+            // 當用戶點擊標記時顯示資訊面板
+            google.maps.event.addListener(marker, 'click', () => {
+                // 更新資訊面板內容並顯示
+                updateInfoPanel(place); // 根據點擊的地點更新資訊
+                infoPanel.classList.add('show'); // 顯示資訊面板
+            });
+        }
+
+        
+
+        // 更新資訊面板的內容
+        function updateInfoPanel(place) {
+            // 設置顯示的基本資訊：名稱、地址、營業狀態
+            let content = `<div class="place-info"><strong>${place.name}</strong><br>`;
+            content += `地址: ${place.vicinity || '地址未知'}<br>`;
+            
+            // 檢查是否有營業時間的資訊
+            if (place.opening_hours) {
+                content += `營業時間: ${place.opening_hours.open_now ? '開放中' : '關閉'}`;
+            } else {
+                content += `營業時間: 資訊未知`;
+            }
+
+            // 顯示電話號碼
+    content += `<br>電話: ${place.phone_number || '資訊未知'}`;
+
+    // 顯示評分
+    content += `<br>評分: ${place.rating ? place.rating.toFixed(1) : '無評分'}`;
+
+    // 顯示前三則評論
+    if (place.reviews && place.reviews.length > 0) {
+        content += `<br>評論:`;
+        for (let i = 0; i < Math.min(3, place.reviews.length); i++) {
+            const review = place.reviews[i];
+            content += `<br>- ${review.text}`;
+        }
+    } else {
+        content += `<br>評論: 資訊未知`;
+    }
+
+
+            // 如果有照片，顯示照片
+            if (place.photos) {
+                const photoUrl = place.photos[0].getUrl({ maxWidth: 100 }); // 獲取照片的網址
+                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:100px;height:auto;">`; // 顯示圖片
+            }
+
+            // 添加關閉按鈕
+            content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
+
+            // 更新資訊面板的 HTML
+            infoPanel.innerHTML = content;
+        }
+
+        
 
                 // 當使用者選擇建議中的寵物醫院時觸發此事件
                 autocomplete.addListener('place_changed', function() {
@@ -146,6 +282,11 @@
 </head>
 <body onload="initMap()" >
     <div id="map" class="map"></div>
+<!-- 資訊面板 -->
+<div id="infoPanel" class="info-panel">
+    <!-- 這裡的內容將通過 JavaScript 更新 -->
+</div>
+
 
     <div class="search">
         <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">

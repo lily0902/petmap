@@ -1,55 +1,157 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>全台寵物醫院標記</title>
+    <!-- 引入 Google Maps API 並啟用 Places 庫，用於搜索和展示地點 -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=你的_API_金鑰&libraries=places"></script>
+    <style>
+        /* 頁面樣式設置 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh; /* 確保頁面高度佔滿整個視窗 */
+        }
+        /* 地圖的樣式，寬高設置為填滿整個視窗 */
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        /* 資訊面板的樣式設置，默認狀態是隱藏在螢幕左側 */
+        #infoPanel {
+            position: fixed; /* 固定在螢幕上方 */
+            top: 0;
+            left: -350px; /* 初始位置完全在螢幕外 */
+            width: 350px; /* 設定資訊面板的寬度 */
+            height: 100%; /* 高度為螢幕的高度 */
+            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            border-right: 1px solid #ccc; /* 右邊框線 */
+            overflow-y: auto; /* 當內容過多時顯示滾動條 */
+            z-index: 1; /* 保持面板在地圖之上 */
+            padding: 20px; /* 面板內的填充距離 */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* 添加陰影效果 */
+            transition: transform 0.5s ease-in-out; /* 添加滑動顯示的動畫效果 */
+            transform: translateX(-100%); /* 初始狀態下將面板隱藏 */
+        }
+        /* 資訊面板滑入螢幕時的狀態 */
+        #infoPanel.show {
+            transform: translateX(350px); /* 顯示時將面板滑入螢幕左側 */
+        }
+        /* 設置標題的樣式 */
+        h2 {
+            margin-top: 0;
+            font-size: 1.5em; /* 調整標題大小 */
+            color: #333;
+        }
+        /* 資訊面板中每個項目的樣式 */
+        .place-info {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px; /* 添加圓角 */
+            background-color: #f9f9f9;
+        }
+        /* 關閉按鈕的樣式設置 */
+        .close-btn {
+            cursor: pointer; /* 鼠標變成手指形狀 */
+            color: #d9534f; /* 紅色關閉按鈕 */
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: center; /* 按鈕置中 */
+            text-decoration: underline; /* 添加下劃線 */
+        }
+        .close-btn:hover {
+            color: #c9302c; /* 滑鼠懸停時按鈕顏色變深 */
+        }
+    </style>
+    <script>
+        let map; // 用來儲存地圖實例
+        let infoPanel; // 用來控制資訊面板的元素
+
+        // 初始化地圖
+        function initMap() {
+            // 設置地圖的中心點為台灣
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 23.6978, lng: 120.9605 }, // 台灣的經緯度
+                zoom: 7 // 初始縮放比例
+            });
+
+            infoPanel = document.getElementById('infoPanel'); // 獲取資訊面板元素
+
+            // 使用 Google Places API 搜尋附近的寵物醫院
+            const service = new google.maps.places.PlacesService(map);
+            const request = {
+                location: { lat: 23.6978, lng: 120.9605 }, // 搜尋範圍的中心點（台灣）
+                radius: '50000', // 搜尋半徑，單位：米
+                keyword: '寵物醫院' // 搜尋關鍵字
+            };
+
+            // 根據請求結果創建標記
+            service.nearbySearch(request, (results, status) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    for (let i = 0; i < results.length; i++) {
+                        createMarker(results[i]); // 對每個搜尋結果創建標記
+                    }
+                }
+            });
+        }
+
+        // 創建地圖上的標記並綁定點擊事件
+        function createMarker(place) {
+            const marker = new google.maps.Marker({
+                map: map, // 地圖實例
+                position: place.geometry.location, // 標記位置
+                title: place.name // 標記的標題（顯示於滑鼠懸停時）
+            });
+
+            // 當用戶點擊標記時顯示資訊面板
+            google.maps.event.addListener(marker, 'click', () => {
+                // 更新資訊面板內容並顯示
+                updateInfoPanel(place); // 根據點擊的地點更新資訊
+                infoPanel.classList.add('show'); // 顯示資訊面板
+            });
+        }
+
+        // 更新資訊面板的內容
+        function updateInfoPanel(place) {
+            // 設置顯示的基本資訊：名稱、地址、營業狀態
+            let content = `<div class="place-info"><strong>${place.name}</strong><br>`;
+            content += `地址: ${place.vicinity || '地址未知'}<br>`;
+            
+            // 檢查是否有營業時間的資訊
+            if (place.opening_hours) {
+                content += `營業時間: ${place.opening_hours.open_now ? '開放中' : '關閉'}`;
+            } else {
+                content += `營業時間: 資訊未知`;
+            }
+
+            // 如果有照片，顯示照片
+            if (place.photos) {
+                const photoUrl = place.photos[0].getUrl({ maxWidth: 100 }); // 獲取照片的網址
+                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:100px;height:auto;">`; // 顯示圖片
+            }
+
+            // 添加關閉按鈕
+            content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
+
+            // 更新資訊面板的 HTML
+            infoPanel.innerHTML = content;
+        }
+
+        // 關閉資訊面板
+        function l() {
+            infoPanel.classList.remove('show'); // 移除顯示狀態，隱藏資訊面板
+        }
+    </script>
 </head>
-<body>
-    /* From Uiverse.io by ahmedyasserdev */ 
-    <form class="form relative">
-      <button class="absolute left-2 -translate-y-1/2 top-1/2 p-1">
-        <svg
-          width="17"
-          height="16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          role="img"
-          aria-labelledby="search"
-          class="w-5 h-5 text-gray-700"
-        >
-          <path
-            d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
-            stroke="currentColor"
-            stroke-width="1.333"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          ></path>
-        </svg>
-      </button>
-      <input
-        class="input rounded-full px-8 py-3 border-2 border-transparent focus:outline-none focus:border-blue-500 placeholder-gray-400 transition-all duration-300 shadow-md"
-        placeholder="Search..."
-        required=""
-        type="text"
-      />
-      <button type="reset" class="absolute right-3 -translate-y-1/2 top-1/2 p-1">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-5 h-5 text-gray-700"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          ></path>
-        </svg>
-      </button>
-    </form>
-    
+<body onload="initMap()">
+    <div id="map"></div> <!-- 地圖顯示區域 -->
+    <div id="infoPanel">
+        <h2>詳細資訊</h2> <!-- 資訊面板的標題 -->
+        <div id="sidebar-content">點擊地圖上的標記以顯示資訊</div> <!-- 預設顯示內容 -->
+    </div>
 </body>
 </html>
