@@ -6,52 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUzXfE5s1UNRbOrPzU-oleqxplMShAerc&libraries=places"></script>
     <style>
-        #infoPanel {
-            position: fixed; /* 固定在螢幕上方 */
-            top: 0;
-            left: -350px; /* 初始位置完全在螢幕外 */
-            width: 350px; /* 設定資訊面板的寬度 */
-            height: 100%; /* 高度為螢幕的高度 */
-            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
-            border-right: 1px solid #ccc; /* 右邊框線 */
-            overflow-y: auto; /* 當內容過多時顯示滾動條 */
-            z-index: 1; /* 保持面板在地圖之上 */
-            padding: 20px; /* 面板內的填充距離 */
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* 添加陰影效果 */
-            transition: transform 0.5s ease-in-out; /* 添加滑動顯示的動畫效果 */
-            transform: translateX(-100%); /* 初始狀態下將面板隱藏 */
-        }
-        /* 資訊面板滑入螢幕時的狀態 */
-        #infoPanel.show {
-            transform: translateX(350px); /* 顯示時將面板滑入螢幕左側 */
-        }
-        /* 設置標題的樣式 */
-        h2 {
-            margin-top: 0;
-            font-size: 1.5em; /* 調整標題大小 */
-            color: #333;
-        }
-        /* 資訊面板中每個項目的樣式 */
-        .place-info {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px; /* 添加圓角 */
-            background-color: #f9f9f9;
-        }
-        /* 關閉按鈕的樣式設置 */
-        .close-btn {
-            cursor: pointer; /* 鼠標變成手指形狀 */
-            color: #d9534f; /* 紅色關閉按鈕 */
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-            text-align: center; /* 按鈕置中 */
-            text-decoration: underline; /* 添加下劃線 */
-        }
-        .close-btn:hover {
-            color: #c9302c; /* 滑鼠懸停時按鈕顏色變深 */
-        }
+       
     </style>
     <script>
         let map; // 地圖物件  
@@ -142,9 +97,14 @@ function closeInfoPanel() {
 
             // 當用戶點擊標記時顯示資訊面板
             google.maps.event.addListener(marker, 'click', () => {
-                // 更新資訊面板內容並顯示
-                updateInfoPanel(place); // 根據點擊的地點更新資訊
-                infoPanel.classList.add('show'); // 顯示資訊面板
+                const service = new google.maps.places.PlacesService(map);
+        
+                service.getDetails({ placeId: place.place_id }, (details, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        updateInfoPanel(details); // 使用詳細資訊更新面板
+                        infoPanel.classList.add('show'); // 顯示資訊面板
+                    }
+                });
             });
         }
 
@@ -152,47 +112,45 @@ function closeInfoPanel() {
 
         // 更新資訊面板的內容
         function updateInfoPanel(place) {
-            // 設置顯示的基本資訊：名稱、地址、營業狀態
             let content = `<div class="place-info"><strong>${place.name}</strong><br>`;
             content += `地址: ${place.vicinity || '地址未知'}<br>`;
-            
+        
             // 檢查是否有營業時間的資訊
             if (place.opening_hours) {
                 content += `營業時間: ${place.opening_hours.open_now ? '開放中' : '關閉'}`;
             } else {
                 content += `營業時間: 資訊未知`;
             }
-
+        
             // 顯示電話號碼
-    content += `<br>電話: ${place.phone_number || '資訊未知'}`;
-
-    // 顯示評分
-    content += `<br>評分: ${place.rating ? place.rating.toFixed(1) : '無評分'}`;
-
-    // 顯示前三則評論
-    if (place.reviews && place.reviews.length > 0) {
-        content += `<br>評論:`;
-        for (let i = 0; i < Math.min(3, place.reviews.length); i++) {
-            const review = place.reviews[i];
-            content += `<br>- ${review.text}`;
-        }
-    } else {
-        content += `<br>評論: 資訊未知`;
-    }
-
-
+            content += `<br>電話: ${place.formatted_phone_number || '資訊未知'}`;
+        
+            // 顯示評分
+            content += `<br>評分: ${place.rating ? place.rating.toFixed(1) : '無評分'}`;
+        
+            // 顯示前三則評論
+            if (place.reviews && place.reviews.length > 0) {
+                content += `<br>評論:`;
+                for (let i = 0; i < Math.min(2, place.reviews.length); i++) {
+                    const review = place.reviews[i];
+                    content += `<br>- ${review.text}`;
+                }
+            } else {
+                content += `<br>評論: 資訊未知`;
+            }
+        
             // 如果有照片，顯示照片
             if (place.photos) {
-                const photoUrl = place.photos[0].getUrl({ maxWidth: 100 }); // 獲取照片的網址
-                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:100px;height:auto;">`; // 顯示圖片
+                const photoUrl = place.photos[0].getUrl({ maxWidth: 100 });
+                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:100px;height:auto;">`;
             }
-
+        
             // 添加關閉按鈕
             content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
-
-            // 更新資訊面板的 HTML
+        
             infoPanel.innerHTML = content;
         }
+        
 
         
 

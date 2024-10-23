@@ -158,3 +158,50 @@ body{
     height:50px;
     background-color: transparent;
   }
+
+  #infoPanel {
+    position: fixed; /* 固定在螢幕上方 */
+    top: 0;
+    left: -350px; /* 初始位置完全在螢幕外 */
+    width: 350px; /* 設定資訊面板的寬度 */
+    height: 100%; /* 高度為螢幕的高度 */
+    background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+    border-right: 1px solid #ccc; /* 右邊框線 */
+    overflow-y: auto; /* 當內容過多時顯示滾動條 */
+    z-index: 1; /* 保持面板在地圖之上 */
+    padding: 20px; /* 面板內的填充距離 */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* 添加陰影效果 */
+    transition: transform 0.5s ease-in-out; /* 添加滑動顯示的動畫效果 */
+    transform: translateX(-100%); /* 初始狀態下將面板隱藏 */
+}
+/* 資訊面板滑入螢幕時的狀態 */
+#infoPanel.show {
+    transform: translateX(350px); /* 顯示時將面板滑入螢幕左側 */
+}
+/* 設置標題的樣式 */
+h2 {
+    margin-top: 0;
+    font-size: 1.5em; /* 調整標題大小 */
+    color: #333;
+}
+/* 資訊面板中每個項目的樣式 */
+.place-info {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px; /* 添加圓角 */
+    background-color: #f9f9f9;
+}
+/* 關閉按鈕的樣式設置 */
+.close-btn {
+    cursor: pointer; /* 鼠標變成手指形狀 */
+    color: #d9534f; /* 紅色關閉按鈕 */
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+    text-align: center; /* 按鈕置中 */
+    text-decoration: underline; /* 添加下劃線 */
+}
+.close-btn:hover {
+    color: #c9302c; /* 滑鼠懸停時按鈕顏色變深 */
+}
