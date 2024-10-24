@@ -57,17 +57,60 @@ function closeInfoPanel() {
                 map.setZoom(18); // 縮放地圖到18級，顯示更細緻的區域
 
                 const service = new google.maps.places.PlacesService(map);
-                const request = {
-                    location: { lat: currentPosition.lat, lng: currentPosition.lng }, // 搜尋範圍的中心點（台灣）
-                    radius: '50000', // 搜尋半徑，單位：米
-                    keyword: '寵物醫院' // 搜尋關鍵字
-                };
+                
+               // 搜尋寵物醫院
+        const hospitalRequest = {
+            location: { lat: currentPosition.lat, lng: currentPosition.lng },
+            radius: '50000',
+            keyword: '寵物醫院'
+        };
+
+        service.nearbySearch(hospitalRequest, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (let i = 0; i < results.length; i++) {
+                    createMarker(results[i], '醫院');
+                }
+            }
+        });
+
+        // 搜尋寵物餐廳
+        const restaurantRequest = {
+            location: { lat: currentPosition.lat, lng: currentPosition.lng },
+            radius: '50000',
+            keyword: '寵物餐廳'
+        };
+
+        service.nearbySearch(restaurantRequest, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (let i = 0; i < results.length; i++) {
+                    createMarker(results[i], '餐廳');
+                }
+            }
+        });
+
+        // 搜尋寵物住宿
+        const hotelRequest = {
+            location: { lat: currentPosition.lat, lng: currentPosition.lng },
+            radius: '50000',
+            keyword: '寵物住宿'
+        };
+
+        service.nearbySearch(hotelRequest, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (let i = 0; i < results.length; i++) {
+                    createMarker(results[i], '住宿');
+                }
+            }
+        });
+
+
+   
 
                 // 啟用自動完成功能，讓使用者輸入時獲得寵物醫院建議 
                 const autocomplete = new google.maps.places.Autocomplete(
                     document.getElementById('search-input'), // 搜尋框 
                     {
-                        types: ['veterinary_care'], // 搜尋類型限定為寵物醫院
+                        types: ['veterinary_care', 'restaurant', 'lodging'], // 搜尋類型限定為寵物醫院
                         bounds: { // 限制搜尋範圍為使用者周圍
                             north: currentPosition.lat + 0.001,
                             south: currentPosition.lat - 0.001,
@@ -79,21 +122,25 @@ function closeInfoPanel() {
                 );
 
                 // 根據請求結果創建標記
-            service.nearbySearch(request, (results, status) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    for (let i = 0; i < results.length; i++) {
-                        createMarker(results[i]); // 對每個搜尋結果創建標記
-                    }
-                }
-            });
+            
 
             // 創建地圖上的標記並綁定點擊事件
-        function createMarker(place) {
-            const marker = new google.maps.Marker({
-                map: map, // 地圖實例
-                position: place.geometry.location, // 標記位置
-                title: place.name // 標記的標題（顯示於滑鼠懸停時）
-            });
+            function createMarker(place, type) {
+                let label;
+                if (type === '醫院') {
+                    label = 'H'; // 醫院標記
+                } else if (type === '餐廳') {
+                    label = 'R'; // 餐廳標記
+                } else if (type === '住宿') {
+                    label = 'S'; // 住宿標記
+                }
+    
+                const marker = new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location,
+                    title: place.name,
+                    label: label, // 根據類型標記不同字母
+                });
 
             // 當用戶點擊標記時顯示資訊面板
             google.maps.event.addListener(marker, 'click', () => {
@@ -101,8 +148,8 @@ function closeInfoPanel() {
         
                 service.getDetails({ placeId: place.place_id }, (details, status) => {
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        updateInfoPanel(details); // 使用詳細資訊更新面板
-                        infoPanel.classList.add('show'); // 顯示資訊面板
+                        updateInfoPanel(details);
+                        infoPanel.classList.add('show');
                     }
                 });
             });
@@ -260,13 +307,14 @@ function closeInfoPanel() {
     
     <!-- 右下方按鈕 -->
     <div class="buttons">
-        <button class="btn" onclick="buttonAction('按鈕1')">按鈕1</button>
-        <button class="btn" onclick="buttonAction('按鈕2')">按鈕2</button>
-        <button class="btn" onclick="buttonAction('按鈕3')">按鈕3</button>
+        <button class="btn" onclick="buttonAction('按鈕1')">寵物醫院</button>
+        <button class="btn" onclick="buttonAction('按鈕2')">寵物友善餐廳</button>
+        <button class="btn" onclick="buttonAction('按鈕3')">寵物旅店</button>
         <button class="btn" onclick="buttonAction('按鈕4')">按鈕4</button>
         <button class="btn" onclick="buttonAction('按鈕5')">按鈕5</button>
     </div>
         <button title="Add New" class="add-button" onclick="buttonAction('按鈕1')">
+            <a href=""></a>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="50px"
