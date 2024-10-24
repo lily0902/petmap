@@ -17,12 +17,33 @@
         let directionsRenderer; // 用來顯示路線的物件 
         let infoWindow; // 彈出視窗，顯示寵物醫院資訊 
         let infoPanel;
+        let markers = { hospitals: [], restaurants: [], hotels: [] }; // 儲存所有地標標記的陣列
 // 關閉資訊面板
 function closeInfoPanel() {
     const infoPanel = document.getElementById('infoPanel')
     infoPanel.classList.remove('show'); // 移除顯示狀態，隱藏資訊面板
 }
 
+// 根據類型顯示對應的地標，隱藏其他類型的標記
+function showMarkersByType(type) {
+    toggleMarkers(markers.hospitals, type === 'hospitals'); // 只顯示醫院標記
+    toggleMarkers(markers.restaurants, type === 'restaurants'); // 只顯示餐廳標記
+    toggleMarkers(markers.hotels, type === 'hotels'); // 只顯示住宿標記
+}
+
+
+function toggleMarkers(markersArray, isVisible) {
+    for (let i = 0; i < markersArray.length; i++) {
+        markersArray[i].setMap(isVisible ? map : null); // 根據 isVisible 決定是否在地圖上顯示標記
+    }
+}
+
+       // 顯示所有地標 (醫院、餐廳、住宿)
+       function showAllMarkers() {
+        toggleMarkers(markers.hospitals, true); // 顯示醫院標記
+        toggleMarkers(markers.restaurants, true); // 顯示餐廳標記
+        toggleMarkers(markers.hotels, true); // 顯示住宿標記
+    }
         function initMap() {
             // 自訂地圖樣式，隱藏所有不需要的地標 
             const mapStyle = [
@@ -68,7 +89,8 @@ function closeInfoPanel() {
         service.nearbySearch(hospitalRequest, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
-                    createMarker(results[i], '醫院');
+                    const marker = createMarker(results[i], '醫院'); // 創建地標
+                    markers.hospitals.push(marker); // 將醫院的地標儲存到陣列
                 }
             }
         });
@@ -83,11 +105,12 @@ function closeInfoPanel() {
         service.nearbySearch(restaurantRequest, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
-                    createMarker(results[i], '餐廳');
+                    const marker = createMarker(results[i], '餐廳'); // 創建餐廳的地標
+                    markers.restaurants.push(marker); // 將餐廳的地標儲存到陣列
                 }
             }
         });
-
+        
         // 搜尋寵物住宿
         const hotelRequest = {
             location: { lat: currentPosition.lat, lng: currentPosition.lng },
@@ -98,7 +121,8 @@ function closeInfoPanel() {
         service.nearbySearch(hotelRequest, (results, status) => {
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
-                    createMarker(results[i], '住宿');
+                    const marker = createMarker(results[i], '住宿'); // 創建住宿的地標
+                    markers.hotels.push(marker); // 將住宿的地標儲存到陣列
                 }
             }
         });
@@ -135,6 +159,7 @@ function closeInfoPanel() {
                     label = 'S'; // 住宿標記
                 }
     
+                // 創建地標並設定其位置與標記
                 const marker = new google.maps.Marker({
                     map: map,
                     position: place.geometry.location,
@@ -153,9 +178,13 @@ function closeInfoPanel() {
                     }
                 });
             });
+            return marker; // 返回創建的地標
         }
 
         
+
+ 
+
 
         // 更新資訊面板的內容
         function updateInfoPanel(place) {
@@ -307,10 +336,10 @@ function closeInfoPanel() {
     
     <!-- 右下方按鈕 -->
     <div class="buttons">
-        <button class="btn" onclick="buttonAction('按鈕1')">寵物醫院</button>
-        <button class="btn" onclick="buttonAction('按鈕2')">寵物友善餐廳</button>
-        <button class="btn" onclick="buttonAction('按鈕3')">寵物旅店</button>
-        <button class="btn" onclick="buttonAction('按鈕4')">按鈕4</button>
+        <button class="btn" onclick="showMarkersByType('hospitals')">寵物醫院</button>
+        <button class="btn" onclick="showMarkersByType('restaurants')">寵物友善餐廳</button>
+        <button class="btn" onclick="showMarkersByType('hotels')">寵物旅店</button>
+        <button class="btn" onclick="showAllMarkers()">全部</button>
         <button class="btn" onclick="buttonAction('按鈕5')">按鈕5</button>
     </div>
         <button title="Add New" class="add-button" onclick="buttonAction('按鈕1')">
