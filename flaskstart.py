@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+import mysql.connector
 from mysql.connector import connect
 
 # 定義 MySQL 連接參數
@@ -114,6 +115,16 @@ def import_data():
 initialize_database()
 import_data()
 
+# MySQL 資料庫連接配置
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="1234",
+    database="pet_database"
+)
+
+
+
 # 3. 建立 Flask 應用和 API
 app = Flask(__name__)
 app.secret_key = "any string"  # 設定密鑰
@@ -122,36 +133,15 @@ app.secret_key = "any string"  # 設定密鑰
 def index():
     return render_template("index.html")
 
-@app.route('/pets', methods=['GET'])
-def get_pets():
-    engine = create_engine(f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    pets = session.query(PetLost).all()
-    results = []
-    for pet in pets:
-        results.append({
-            "chip_number": pet.chip_number,
-            "pet_name": pet.pet_name,
-            "pet_type": pet.pet_type,
-            "gender": pet.gender,
-            "breed": pet.breed,
-            "color": pet.color,
-            "appearance": pet.appearance,
-            "features": pet.features,
-            "lost_date": pet.lost_date.strftime('%Y-%m-%d') if pet.lost_date else None,
-            "lost_location": pet.lost_location,
-            "latitude": pet.latitude,
-            "longitude": pet.longitude,
-            "owner_name": pet.owner_name,
-            "contact_phone": pet.contact_phone,
-            "email": pet.email,
-            "photo_url": pet.photo_url
-        })
-
-    session.close()
+# API 路徑：獲取 pet_lost 表的數據
+@app.route('/api/pet-lost', methods=['GET'])
+def get_lost_pets():
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM pet_lost")
+    results = cursor.fetchall()
+    cursor.close()
     return jsonify(results)
+
 
 # 啟動應用
 if __name__ == '__main__':

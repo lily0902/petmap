@@ -44,6 +44,38 @@ function toggleMarkers(markersArray, isVisible) {
         toggleMarkers(markers.restaurants, true); // 顯示餐廳標記
         toggleMarkers(markers.hotels, true); // 顯示住宿標記
     }
+
+    // 從 API 獲取遺失寵物數據並在地圖上顯示
+    function fetchLostPets() {
+        fetch('/api/pet-lost')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(pet => {
+                    const position = { lat: parseFloat(pet.latitude), lng: parseFloat(pet.longitude) };
+                    const marker = new google.maps.Marker({
+                        map: map,
+                        position: position,
+                        title: `遺失寵物: ${pet.name}`,
+                        icon: 'https://maps.google.com/mapfiles/ms/icons/pink-dot.png'
+                    });
+
+                    google.maps.event.addListener(marker, 'click', () => {
+                        const infoContent = `
+                            <div><strong>${pet.name}</strong></div>
+                            <div>遺失日期: ${pet.lost_date}</div>
+                            <div>聯絡電話: ${pet.contact}</div>
+                            <div>描述: ${pet.description}</div>
+                        `;
+                        if (!infoWindow) {
+                            infoWindow = new google.maps.InfoWindow();
+                        }
+                        infoWindow.setContent(infoContent);
+                        infoWindow.open(map, marker);
+                    });
+                });
+            })
+            .catch(error => console.error('獲取遺失寵物數據錯誤:', error));
+    }
         function initMap() {
             // 自訂地圖樣式，隱藏所有不需要的地標 
             const mapStyle = [
@@ -79,7 +111,9 @@ function toggleMarkers(markersArray, isVisible) {
 
                 const service = new google.maps.places.PlacesService(map);
                 
-               // 搜尋寵物醫院
+                fetchLostPets(); // 呼叫函數來顯示遺失寵物
+               
+                // 搜尋寵物醫院
         const hospitalRequest = {
             location: { lat: currentPosition.lat, lng: currentPosition.lng },
             radius: '50000',
