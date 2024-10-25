@@ -58,24 +58,33 @@ function toggleMarkers(markersArray, isVisible) {
                         title: `遺失寵物: ${pet.name}`,
                         icon: 'https://maps.google.com/mapfiles/ms/icons/pink-dot.png'
                     });
-
+    
                     google.maps.event.addListener(marker, 'click', () => {
-                        const infoContent = `
-                            <div><strong>${pet.name}</strong></div>
-                            <div>遺失日期: ${pet.lost_date}</div>
-                            <div>聯絡電話: ${pet.contact}</div>
-                            <div>描述: ${pet.description}</div>
-                        `;
-                        if (!infoWindow) {
-                            infoWindow = new google.maps.InfoWindow();
-                        }
-                        infoWindow.setContent(infoContent);
-                        infoWindow.open(map, marker);
+                        updateLostPetInfoPanel(pet); // 更新資訊面板
+                        infoPanel.classList.add('show'); // 顯示資訊面板
                     });
                 });
             })
             .catch(error => console.error('獲取遺失寵物數據錯誤:', error));
     }
+    function updateLostPetInfoPanel(pet) {
+        let content = `<div class="place-info"><strong>${pet.pet_name}</strong><br>`;
+        content += `類型: ${pet.pet_type}<br>`;
+        content += `性別: ${pet.gender}<br>`;
+        content += `品種: ${pet.breed}<br>`;
+        content += `顏色: ${pet.color}<br>`;
+        content += `遺失日期: ${pet.lost_date}<br>`;
+        content += `遺失地點: ${pet.lost_location}<br>`;
+        content += `描述: ${pet.features || '無描述'}<br>`;
+        content += `飼主: ${pet.owner_name}<br>`;
+        content += `聯絡電話: ${pet.contact_phone}<br>`;
+        content += `email: ${pet.email}<br>`;
+        content += `<img src="${pet.photo_url}"  style="width:300px;"/> <br>`;
+        content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
+        
+        infoPanel.innerHTML = content;
+    }
+    
         function initMap() {
             // 自訂地圖樣式，隱藏所有不需要的地標 
             const mapStyle = [

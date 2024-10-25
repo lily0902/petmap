@@ -28,6 +28,7 @@ def initialize_database():
             # 如果資料庫不存在，建立資料庫
             cursor.execute(f"CREATE DATABASE {DB_NAME} DEFAULT CHARACTER SET 'utf8'")
             print(f"資料庫 '{DB_NAME}' 已建立。")
+            import_data()
         else:
             print(f"資料庫 '{DB_NAME}' 已存在。")
 
@@ -113,7 +114,6 @@ def import_data():
 
 # 初始化資料庫和匯入資料
 initialize_database()
-import_data()
 
 # MySQL 資料庫連接配置
 db = mysql.connector.connect(
