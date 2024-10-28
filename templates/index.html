@@ -115,6 +115,10 @@ function toggleMarkers(markersArray, isVisible) {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
+                
+                sendLocationToServer(currentPosition);
+
+
                 map.setCenter(currentPosition); // 將地圖中心設置為使用者當前位置
                 map.setZoom(18); // 縮放地圖到18級，顯示更細緻的區域
 
@@ -122,6 +126,35 @@ function toggleMarkers(markersArray, isVisible) {
                 
                 fetchLostPets(); // 呼叫函數來顯示遺失寵物
                
+                function sendLocationToServer(position) {
+                    const data = {
+                        latitude: position.lat,
+                        longitude: position.lng
+                    };
+        
+                    // 發送數據到後端
+                    fetch('/templates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('網絡回應不正常');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('成功:', data);
+                        // 在這裡可以根據需要處理成功響應
+                    })
+                    .catch((error) => {
+                        console.error('錯誤:', error);
+                    });
+                }
+
                 // 搜尋寵物醫院
         const hospitalRequest = {
             location: { lat: currentPosition.lat, lng: currentPosition.lng },
@@ -385,8 +418,9 @@ function toggleMarkers(markersArray, isVisible) {
         <button class="btn" onclick="showAllMarkers()">全部</button>
         <button class="btn" onclick="buttonAction('按鈕5')">按鈕5</button>
     </div>
-        <button title="Add New" class="add-button" onclick="buttonAction('按鈕1')">
-            <a href=""></a>
+    <a href="/ad-post">
+        <button title="Add New" class="add-button" >
+           
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="50px"
@@ -402,7 +436,7 @@ function toggleMarkers(markersArray, isVisible) {
             </svg>
           </button>
         <button class="back"></button>
-    
+    </a>
     
 </body>
 </html>

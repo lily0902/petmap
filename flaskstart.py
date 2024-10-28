@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import mysql.connector
+import os
 from mysql.connector import connect
 
 # 定義 MySQL 連接參數
@@ -133,7 +134,36 @@ app.secret_key = "any string"  # 設定密鑰
 def index():
     return render_template("index.html")
 
+@app.route('/ad-post')
+def ad_post():
+    return render_template("ad-post.html")
 # API 路徑：獲取 pet_lost 表的數據
+
+@app.route('/templates',methods=['POST', 'GET'])
+def templates():
+
+    pet_name = request.form["pet_name"]
+    lost_date = request.form["lost_date"]
+    lost_location = request.form["lost_location"]
+    features = request.form["features"]
+    contact_phone = request.form["contact_phone"]
+    data = request.get_json()
+    if data is None:  # 如果請求內容不是 JSON
+        return jsonify({'error': 'Invalid JSON'}), 415  # 返回 415 錯誤
+    latitude = float(data.get('latitude'))
+    longitude = float(data.get('longitude'))
+
+    #建立 cursor 物件，用來對資料庫下sql指令
+    cursor = db.cursor()
+    sql = "INSERT INTO pet_lost(pet_name, lost_date, lost_location, features,latitude ,longitude,contact_phone) VALUES (%s, %s, %s, %s,%f,%f, %s)"
+    values = (pet_name, lost_date, lost_location, features,latitude ,longitude, contact_phone)
+    cursor.execute(sql, values)
+    db.commit()
+    cursor.close()
+    #css_files = [f for f in os.listdir('static') if f.endswith('.css')]
+    print("資料連線成功")
+    return render_template("template.html")
+
 @app.route('/api/pet-lost', methods=['GET'])
 def get_lost_pets():
     cursor = db.cursor(dictionary=True)
@@ -141,6 +171,8 @@ def get_lost_pets():
     results = cursor.fetchall()
     cursor.close()
     return jsonify(results)
+
+
 
 
 # 啟動應用
