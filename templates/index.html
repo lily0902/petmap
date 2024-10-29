@@ -126,34 +126,41 @@ function toggleMarkers(markersArray, isVisible) {
                 
                 fetchLostPets(); // 呼叫函數來顯示遺失寵物
                
-                function sendLocationToServer(position) {
-                    const data = {
-                        latitude: position.lat,
-                        longitude: position.lng
-                    };
-        
-                    // 發送數據到後端
-                    fetch('/templates', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('網絡回應不正常');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('成功:', data);
-                        // 在這裡可以根據需要處理成功響應
-                    })
-                    .catch((error) => {
-                        console.error('錯誤:', error);
-                    });
-                }
+                // 經緯度的 AJAX 發送
+function sendLocationToServer(position) { 
+    const data = { 
+        latitude: position.lat,
+        longitude: position.lng
+    };
+
+    fetch('/templates', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('網絡回應不正常');
+        }
+        return response.json(); 
+    }) 
+    .then(data => { 
+        console.log('成功:', data); 
+    })
+    .catch((error) => {
+        console.error('錯誤:', error);
+    });
+}
+
+// 當表單提交時再發送其他數據
+document.getElementById("templates").addEventListener("submit", function(event) {
+    event.preventDefault();
+    // 提交表單時觸發完整數據發送
+    this.submit(); // 繼續表單提交
+});
+
 
                 // 搜尋寵物醫院
         const hospitalRequest = {
