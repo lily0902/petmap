@@ -22,9 +22,6 @@ let hospitalsVisible = false;
 let restaurantsVisible = false;
 let hotelsVisible = false;
 let allMarkersVisible = false; // 新增的變數
-
-let openMarker = null; // 跟踪當前開啟資訊的標記
-
         // 假設 markers 是您之前定義的地標集合
 const markers = {
     hospitals: [], // 存放寵物醫院的標記
@@ -118,23 +115,9 @@ function toggleMarkers(markersArray, shouldShow) {
                         icon: 'https://maps.google.com/mapfiles/ms/icons/pink-dot.png'
                     });
     
-                    // 為每個標記添加點擊事件
                     google.maps.event.addListener(marker, 'click', () => {
-                        if (openMarker === marker) {
-                            // 如果點擊的是當前顯示的標記，則關閉面板
-                            closeInfoPanel();
-                            openMarker = null; // 重置為無開啟標記
-                        } else {
-                            // 如果點擊的是其他標記
-                            if (openMarker) {
-                                // 關閉上一個標記的資訊
-                                closeInfoPanel();
-                            }
-                            // 更新並顯示新標記的資訊
-                            updateLostPetInfoPanel(pet);
-                            infoPanel.classList.add('show');
-                            openMarker = marker; // 更新為新標記
-                        }
+                        updateLostPetInfoPanel(pet); // 更新資訊面板
+                        infoPanel.classList.add('show'); // 顯示資訊面板
                     });
                 });
             })
