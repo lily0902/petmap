@@ -17,32 +17,88 @@
         let directionsRenderer; // 用來顯示路線的物件 
         let infoWindow; // 彈出視窗，顯示寵物醫院資訊 
         let infoPanel;
-        let markers = { hospitals: [], restaurants: [], hotels: [] }; // 儲存所有地標標記的陣列
+        // 追蹤每種地標的顯示狀態
+let hospitalsVisible = false;
+let restaurantsVisible = false;
+let hotelsVisible = false;
+let allMarkersVisible = false; // 新增的變數
+        // 假設 markers 是您之前定義的地標集合
+const markers = {
+    hospitals: [], // 存放寵物醫院的標記
+    restaurants: [], // 存放餐廳的標記
+    hotels: [] // 存放住宿的標記
+};
+
+
 // 關閉資訊面板
 function closeInfoPanel() {
     const infoPanel = document.getElementById('infoPanel')
     infoPanel.classList.remove('show'); // 移除顯示狀態，隱藏資訊面板
 }
 
-// 根據類型顯示對應的地標，隱藏其他類型的標記
-function showMarkersByType(type) {
-    toggleMarkers(markers.hospitals, type === 'hospitals'); // 只顯示醫院標記
-    toggleMarkers(markers.restaurants, type === 'restaurants'); // 只顯示餐廳標記
-    toggleMarkers(markers.hotels, type === 'hotels'); // 只顯示住宿標記
+// 顯示/隱藏寵物醫院地標
+function toggleHospitals() {
+    hospitalsVisible = !hospitalsVisible;
+    toggleMarkers(markers.hospitals, hospitalsVisible);
 }
 
+// 顯示/隱藏餐廳地標
+function toggleRestaurants() {
+    restaurantsVisible = !restaurantsVisible;
+    toggleMarkers(markers.restaurants, restaurantsVisible);
+}
 
-function toggleMarkers(markersArray, isVisible) {
-    for (let i = 0; i < markersArray.length; i++) {
-        markersArray[i].setMap(isVisible ? map : null); // 根據 isVisible 決定是否在地圖上顯示標記
+// 顯示/隱藏住宿地標
+function toggleHotels() {
+    hotelsVisible = !hotelsVisible;
+    toggleMarkers(markers.hotels, hotelsVisible);
+}
+
+function showAllMarkers() {
+    allMarkersVisible = !allMarkersVisible; // 切換狀態
+
+    if (allMarkersVisible) {
+        // 顯示所有標記
+        toggleMarkers(markers.hospitals, true);
+        toggleMarkers(markers.restaurants, true);
+        toggleMarkers(markers.hotels, true);
+    } else {
+        // 隱藏所有標記
+        toggleMarkers(markers.hospitals, false);
+        toggleMarkers(markers.restaurants, false);
+        toggleMarkers(markers.hotels, false);
     }
 }
 
+function toggleMarkers(markersArray, shouldShow) {
+    markersArray.forEach(marker => {
+        if (shouldShow) {
+            marker.setMap(map); // 顯示標記
+        } else {
+            marker.setMap(null); // 隱藏標記
+        }
+    });
+}
+
+
+
+
        // 顯示所有地標 (醫院、餐廳、住宿)
        function showAllMarkers() {
-        toggleMarkers(markers.hospitals, true); // 顯示醫院標記
-        toggleMarkers(markers.restaurants, true); // 顯示餐廳標記
-        toggleMarkers(markers.hotels, true); // 顯示住宿標記
+        // 根據 allMarkersVisible 的狀態決定要顯示還是隱藏
+    if (allMarkersVisible) {
+        // 如果所有標記都顯示，則隱藏它們
+        toggleMarkers(markers.hospitals, false);
+        toggleMarkers(markers.restaurants, false);
+        toggleMarkers(markers.hotels, false);
+        allMarkersVisible = false; // 更新狀態
+    } else {
+        // 如果有標記隱藏，則顯示所有標記
+        toggleMarkers(markers.hospitals, true);
+        toggleMarkers(markers.restaurants, true);
+        toggleMarkers(markers.hotels, true);
+        allMarkersVisible = true; // 更新狀態
+    }
     }
 
     // 從 API 獲取遺失寵物數據並在地圖上顯示
@@ -126,7 +182,13 @@ function toggleMarkers(markersArray, isVisible) {
                 
                 fetchLostPets(); // 呼叫函數來顯示遺失寵物
                
-                // 經緯度的 AJAX 發送
+
+                // 綁定按鈕點擊事件
+document.getElementById('toggleHospitalsButton').addEventListener('click', toggleHospitals);
+document.getElementById('toggleRestaurantsButton').addEventListener('click', toggleRestaurants);
+document.getElementById('toggleHotelsButton').addEventListener('click', toggleHotels);
+allMarkersVisible = false; // 初始狀態  
+// 經緯度的 AJAX 發送
 function sendLocationToServer(position) { 
     const data = { 
         latitude: position.lat,
@@ -154,12 +216,6 @@ function sendLocationToServer(position) {
     });
 }
 
-// 當表單提交時再發送其他數據
-document.getElementById("templates").addEventListener("submit", function(event) {
-    event.preventDefault();
-    // 提交表單時觸發完整數據發送
-    this.submit(); // 繼續表單提交
-});
 
 
                 // 搜尋寵物醫院
@@ -173,6 +229,7 @@ document.getElementById("templates").addEventListener("submit", function(event) 
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     const marker = createMarker(results[i], '醫院'); // 創建地標
+                    marker.setMap(null); // 隱藏醫院的標記
                     markers.hospitals.push(marker); // 將醫院的地標儲存到陣列
                 }
             }
@@ -189,6 +246,7 @@ document.getElementById("templates").addEventListener("submit", function(event) 
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     const marker = createMarker(results[i], '餐廳'); // 創建餐廳的地標
+                    marker.setMap(null); // 隱藏餐廳的標記
                     markers.restaurants.push(marker); // 將餐廳的地標儲存到陣列
                 }
             }
@@ -205,6 +263,7 @@ document.getElementById("templates").addEventListener("submit", function(event) 
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     const marker = createMarker(results[i], '住宿'); // 創建住宿的地標
+                    marker.setMap(null); // 隱藏住宿的標記
                     markers.hotels.push(marker); // 將住宿的地標儲存到陣列
                 }
             }
@@ -419,10 +478,10 @@ document.getElementById("templates").addEventListener("submit", function(event) 
     
     <!-- 右下方按鈕 -->
     <div class="buttons">
-        <button class="btn" onclick="showMarkersByType('hospitals')">寵物醫院</button>
-        <button class="btn" onclick="showMarkersByType('restaurants')">寵物友善餐廳</button>
-        <button class="btn" onclick="showMarkersByType('hotels')">寵物旅店</button>
-        <button class="btn" onclick="showAllMarkers()">全部</button>
+        <button class="btn" id="toggleHospitalsButton">寵物醫院</button>
+        <button class="btn" id="toggleRestaurantsButton">寵物友善餐廳</button>
+        <button class="btn" id="toggleHotelsButton">寵物旅店</button>
+        <button class="btn" id="toggleAllButton" onclick="showAllMarkers()">全部</button>
         <button class="btn" onclick="buttonAction('按鈕5')">按鈕5</button>
     </div>
     <a href="/ad-post">
