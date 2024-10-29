@@ -327,16 +327,31 @@ function sendLocationToServer(position) {
                 });
 
             // 當用戶點擊標記時顯示資訊面板
-            google.maps.event.addListener(marker, 'click', () => {
-                const service = new google.maps.places.PlacesService(map);
-        
-                service.getDetails({ placeId: place.place_id }, (details, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        updateInfoPanel(details);
-                        infoPanel.classList.add('show');
-                    }
-                });
-            });
+            
+google.maps.event.addListener(marker, 'click', () => {
+    const service = new google.maps.places.PlacesService(map);
+    
+    if (openMarker === marker) {
+        // 如果點擊的是當前顯示的標記，則關閉面板
+        closeInfoPanel();
+        openMarker = null; // 重置為無開啟標記
+    } else {
+        // 如果點擊的是其他標記
+        if (openMarker) {
+            // 關閉上一個標記的資訊
+            closeInfoPanel();
+        }
+        // 獲取新的標記詳細資訊
+        service.getDetails({ placeId: place.place_id }, (details, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                updateInfoPanel(details);
+                infoPanel.classList.add('show');
+                openMarker = marker; // 更新為新標記
+            }
+        });
+    }
+});
+
             return marker; // 返回創建的地標
         }
 
@@ -381,7 +396,7 @@ function sendLocationToServer(position) {
             }
         
             // 添加關閉按鈕
-            content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
+            //content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
         
             infoPanel.innerHTML = content;
         }
