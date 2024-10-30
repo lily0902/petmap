@@ -224,6 +224,30 @@ def get_lost_pets():
     cursor.close()
     return jsonify(results)
 
+@app.route('/api/pet-lost/delete', methods=['DELETE'])
+def delete_lost_pet():
+    data = request.get_json()
+    lost_location = data.get('lost_location')
+
+    if not lost_location:
+        return jsonify({'error': '缺少走失地點'}), 400
+
+    try:
+        cursor = db.cursor()
+        sql = "DELETE FROM pet_lost WHERE lost_location = %s"
+        cursor.execute(sql, (lost_location,))
+        db.commit()
+
+        if cursor.rowcount > 0:
+            return jsonify({'message': '已成功回報'}), 200
+        else:
+            return jsonify({'error': '未找到相關資料'}), 404
+
+    except Exception as e:
+        db.rollback()  # 如果發生錯誤，回滾交易
+        return jsonify({'error': f'刪除失敗: {e}'}), 500
+    finally:
+        cursor.close()
 
 
 

@@ -141,6 +141,29 @@ function toggleMarkers(markersArray, shouldShow) {
             .catch(error => console.error('獲取遺失寵物數據錯誤:', error));
     }
     
+    function reportLostPet(lostLocation) {
+        fetch('/api/pet-lost/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lost_location: lostLocation })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message); // 顯示刪除成功訊息
+                closeInfoPanel()
+            } else if (data.error) {
+                alert(data.error); // 顯示錯誤訊息
+            }
+        })
+        .catch(error => {
+            console.error('刪除失敗:', error);
+        });
+    }
+    
+
     function updateLostPetInfoPanel(pet) {
         let content = `<div class="place-info"><div class="text-wrapper">寵物名字:</div>
           <div class="text-wrapper-2">${pet.pet_name}</div><br>`;
@@ -152,7 +175,12 @@ function toggleMarkers(markersArray, shouldShow) {
           <div class="text-wrapper-2">${pet.features || '無描述'}</div><br>`;   
         content += `<div class="text-wrapper">聯絡電話:</div>
           <div class="text-wrapper-2">${pet.contact_phone}</div><br>`;  
-        content += `<img src="${pet.photo_url}"  style="width:450px; float:left;"/> <br></div>`;
+        content += `<img src="${pet.photo_url}"  style="width:450px; float:left; "/> <br>`;
+        
+
+
+// 添加回報按鈕並設定回報功能
+    content += `<button onclick="reportLostPet('${pet.lost_location}')" class="reportbutton"></button></div>`;
         infoPanel.innerHTML = content;
     }
     
