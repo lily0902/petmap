@@ -141,20 +141,17 @@ function toggleMarkers(markersArray, shouldShow) {
             .catch(error => console.error('獲取遺失寵物數據錯誤:', error));
     }
     function updateLostPetInfoPanel(pet) {
-        let content = `<div class="place-info"><strong>${pet.pet_name}</strong><br>`;
-        content += `類型: ${pet.pet_type}<br>`;
-        content += `性別: ${pet.gender}<br>`;
-        content += `品種: ${pet.breed}<br>`;
-        content += `顏色: ${pet.color}<br>`;
-        content += `遺失日期: ${pet.lost_date}<br>`;
-        content += `遺失地點: ${pet.lost_location}<br>`;
-        content += `描述: ${pet.features || '無描述'}<br>`;
-        content += `飼主: ${pet.owner_name}<br>`;
-        content += `聯絡電話: ${pet.contact_phone}<br>`;
-        content += `email: ${pet.email}<br>`;
-        content += `<img src="../static/${pet.photo_url}"  style="width:300px;"/> <br>`;
-
-        
+        let content = `<div class="place-info"><div class="text-wrapper">寵物名字:</div>
+          <div class="text-wrapper-2">${pet.pet_name}</div><br>`;
+        content += `<div class="text-wrapper">走失日期:</div>
+          <div class="text-wrapper-2">${pet.lost_date}</div><br>`;   
+        content += `<div class="text-wrapper">走失地點:</div>
+          <div class="text-wrapper-2">${pet.lost_location}</div><br>`;
+        content += `<div class="text-wrapper">寵物特徵:</div>
+          <div class="text-wrapper-2">${pet.features || '無描述'}</div><br>`;   
+        content += `<div class="text-wrapper">聯絡電話:</div>
+          <div class="text-wrapper-2">${pet.contact_phone}</div><br>`;  
+        content += `<img src="${pet.photo_url}"  style="width:300px;"/> <br></div>`;
         infoPanel.innerHTML = content;
     }
     

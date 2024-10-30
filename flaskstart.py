@@ -57,7 +57,7 @@ def import_data():
         color = Column(String(50))
         appearance = Column(String(50))
         features = Column(String(255))
-        lost_date = Column(DateTime)
+        lost_date = Column(String(50))
         lost_location = Column(String(255))
         latitude = Column(Float)
         longitude = Column(Float)
@@ -193,7 +193,7 @@ def templates():
                     return jsonify({'error': '儲存檔案時出現錯誤'}), 500
                 
                 # 設定圖片的相對路徑
-                photo_url = f'uploads/{photo_filename}'
+                photo_url = f'../static/uploads/{photo_filename}'
                 
                 
                 # 儲存到資料庫

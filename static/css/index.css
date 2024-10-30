@@ -165,7 +165,7 @@ body{
     left: -350px; /* 初始位置完全在螢幕外 */
     width: 350px; /* 設定資訊面板的寬度 */
     height: 100%; /* 高度為螢幕的高度 */
-    background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+    background-color: #FFF7F0; /* 半透明白色背景 */
     border-right: 1px solid #ccc; /* 右邊框線 */
     overflow-y: auto; /* 當內容過多時顯示滾動條 */
     z-index: 1; /* 保持面板在地圖之上 */
@@ -187,21 +187,37 @@ h2 {
 /* 資訊面板中每個項目的樣式 */
 .place-info {
     margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
+    padding: 20px;
+    border: 1px solid #FAE5CE;
     border-radius: 5px; /* 添加圓角 */
-    background-color: #f9f9f9;
+    background-color: #FFFFFF;
+    color:#5A5A5A;
+    font-weight:bold;
+
 }
-/* 關閉按鈕的樣式設置 */
-.close-btn {
-    cursor: pointer; /* 鼠標變成手指形狀 */
-    color: #d9534f; /* 紅色關閉按鈕 */
-    font-weight: bold;
-    display: block;
-    margin-top: 10px;
-    text-align: center; /* 按鈕置中 */
-    text-decoration: underline; /* 添加下劃線 */
+
+.text-wrapper {
+  font-family: "Inter", Helvetica;
+  font-weight: 700;
+  color: #907c76;
+  font-size: 20px;
+  letter-spacing: 4.80px;
+  line-height: normal;
+  float:left;
 }
-.close-btn:hover {
-    color: #c9302c; /* 滑鼠懸停時按鈕顏色變深 */
+.text-wrapper-2 {
+  word-break: break-word;           /* 確保長字在需要時換行 */
+  overflow-wrap: break-word;        /* 控制單字自動換行 */
+  position: inherit;
+  padding:3px;
+  height:auto;
+  /*top: 2px;
+  left: 178px;*/
+  font-family: "Inter", Helvetica;
+  font-weight: 500;
+  color: #595959;
+  font-size: 20px;
+  letter-spacing: 3px;
+  line-height: normal;
+  white-space: normal;              /* 允許換行 */
 }
