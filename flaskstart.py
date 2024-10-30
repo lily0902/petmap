@@ -7,6 +7,7 @@ import pandas as pd
 import mysql.connector
 import os
 from mysql.connector import connect
+from werkzeug.utils import secure_filename
 
 # 定義 MySQL 連接參數
 DB_USER = 'root'          # 例如 'root'
@@ -126,9 +127,21 @@ db = mysql.connector.connect(
 
 
 
+
 # 3. 建立 Flask 應用和 API
 app = Flask(__name__)
 app.secret_key = "any string"  # 設定密鑰
+# 確保存在上傳目錄
+UPLOAD_FOLDER = 'static/uploads'  # 上傳的照片保存路徑
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # 將上傳目錄加入 Flask 配置
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# 全局經緯度變數
+location_data = {}
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -161,21 +174,45 @@ def templates():
             contact_phone = request.form.get("contact_phone")
             latitude = location_data.get('latitude')
             longitude = location_data.get('longitude')
+            
+            # 正確獲取上傳的圖片檔案
+            picture = request.files.get('picture')
+            if picture and allowed_file(picture.filename):
+                
+                # 使用 secure_filename 來獲取安全的檔案名稱
+                photo_filename = secure_filename(picture.filename)
+            
+            
+                # 儲存檔案到伺服器
+                picture_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)  # 修正為正確的路徑
+                try:
+                    picture.save(picture_path)  # 保存到 static/uploads
+                    print(f"檔案成功保存到: {picture_path}")  # 偵錯訊息
+                except Exception as e:
+                    print(f"儲存檔案時出現錯誤: {e}")  # 偵錯訊息
+                    return jsonify({'error': '儲存檔案時出現錯誤'}), 500
+                
+                # 設定圖片的相對路徑
+                photo_url = f'uploads/{photo_filename}'
+                
+                
+                # 儲存到資料庫
+                cursor = db.cursor()
+                sql = """
+                INSERT INTO pet_lost (pet_name, lost_date, lost_location, features, latitude, longitude, contact_phone, photo_url) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (pet_name, lost_date, lost_location, features, latitude, longitude, contact_phone, photo_url)
+                cursor.execute(sql, values)
+                db.commit()
+                cursor.close()
 
-            # 儲存到資料庫
-            cursor = db.cursor()
-            sql = """
-            INSERT INTO pet_lost (pet_name, lost_date, lost_location, features, latitude, longitude, contact_phone) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (pet_name, lost_date, lost_location, features, latitude, longitude, contact_phone)
-            cursor.execute(sql, values)
-            db.commit()
-            cursor.close()
-
-            print("資料連線成功")
+                print("資料連線成功")
             return render_template("template.html")
-
+    
+   
+        
+        
     return render_template("template.html")
 
 
@@ -193,3 +230,4 @@ def get_lost_pets():
 # 啟動應用
 if __name__ == '__main__':
     app.run(debug=True)
+

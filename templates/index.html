@@ -152,7 +152,7 @@ function toggleMarkers(markersArray, shouldShow) {
         content += `飼主: ${pet.owner_name}<br>`;
         content += `聯絡電話: ${pet.contact_phone}<br>`;
         content += `email: ${pet.email}<br>`;
-        content += `<img src="${pet.photo_url}"  style="width:300px;"/> <br>`;
+        content += `<img src="../static/${pet.photo_url}"  style="width:300px;"/> <br>`;
 
         
         infoPanel.innerHTML = content;
