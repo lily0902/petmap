@@ -140,6 +140,7 @@ function toggleMarkers(markersArray, shouldShow) {
             })
             .catch(error => console.error('獲取遺失寵物數據錯誤:', error));
     }
+    
     function updateLostPetInfoPanel(pet) {
         let content = `<div class="place-info"><div class="text-wrapper">寵物名字:</div>
           <div class="text-wrapper-2">${pet.pet_name}</div><br>`;
@@ -151,7 +152,7 @@ function toggleMarkers(markersArray, shouldShow) {
           <div class="text-wrapper-2">${pet.features || '無描述'}</div><br>`;   
         content += `<div class="text-wrapper">聯絡電話:</div>
           <div class="text-wrapper-2">${pet.contact_phone}</div><br>`;  
-        content += `<img src="${pet.photo_url}"  style="width:300px;"/> <br></div>`;
+        content += `<img src="${pet.photo_url}"  style="width:450px; float:left;"/> <br></div>`;
         infoPanel.innerHTML = content;
     }
     
@@ -360,38 +361,44 @@ google.maps.event.addListener(marker, 'click', () => {
 
         // 更新資訊面板的內容
         function updateInfoPanel(place) {
-            let content = `<div class="place-info"><strong>${place.name}</strong><br>`;
-            content += `地址: ${place.vicinity || '地址未知'}<br>`;
-        
-            // 檢查是否有營業時間的資訊
-            if (place.opening_hours) {
-                content += `營業時間: ${place.opening_hours.open_now ? '開放中' : '關閉'}`;
-            } else {
-                content += `營業時間: 資訊未知`;
-            }
-        
-            // 顯示電話號碼
-            content += `<br>電話: ${place.formatted_phone_number || '資訊未知'}`;
-        
-            // 顯示評分
-            content += `<br>評分: ${place.rating ? place.rating.toFixed(1) : '無評分'}`;
-        
-            // 顯示前三則評論
-            if (place.reviews && place.reviews.length > 0) {
-                content += `<br>評論:`;
-                for (let i = 0; i < Math.min(2, place.reviews.length); i++) {
-                    const review = place.reviews[i];
-                    content += `<br>- ${review.text}`;
-                }
-            } else {
-                content += `<br>評論: 資訊未知`;
-            }
-        
+            let content = `<div class="place-info"><strong><h3 style="color:#88746E;">${place.name}</h3></strong><br>`;
             // 如果有照片，顯示照片
             if (place.photos) {
-                const photoUrl = place.photos[0].getUrl({ maxWidth: 100 });
-                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:100px;height:auto;">`;
+                const photoUrl = place.photos[0].getUrl({ maxWidth: 450 });
+                content += `<br><img src="${photoUrl}" alt="${place.name}" style="width:450px;height:auto;"><br><br>`;
             }
+            
+            content += `<div class="text-wrapper">地址:</div>
+          <div class="text-wrapper-2">${place.vicinity || '地址未知'}</div><br>`;
+            
+            // 檢查是否有營業時間的資訊
+            if (place.opening_hours) {
+                content += `<div class="text-wrapper">營業時間:</div>
+          <div class="text-wrapper-2">${place.opening_hours.open_now ? '開放中' : '關閉'}</div>`;
+            } else {
+                content += `<div class="text-wrapper">營業時間:</div> <div class="text-wrapper-2">營業未知</div>`;
+            }
+            
+            // 顯示電話號碼
+            content += `<br> <div class="text-wrapper">電話:</div><div class="text-wrapper-2">${place.formatted_phone_number || '資訊未知'}</div>`;
+            
+
+            // 顯示評分
+            content += `<br><div class="text-wrapper">評分:</div> <div class="text-wrapper-2">${place.rating ? place.rating.toFixed(1) : '無評分'}</div>`;
+            
+
+            // 顯示前三則評論
+            if (place.reviews && place.reviews.length > 0) {
+                content += `<br><div class="text-wrapper">評論:</div>`;
+                for (let i = 0; i < Math.min(2, place.reviews.length); i++) {
+                    const review = place.reviews[i];
+                    content += `<br><div class="text-wrapper-2">* ${review.text}</div>`;
+                }
+            } else {
+                content += `<br><div class="text-wrapper">評論:</div> <div class="text-wrapper-2">資訊未知</div>`;
+            }
+        
+            
         
             // 添加關閉按鈕
             //content += `<span class="close-btn" onclick="closeInfoPanel()">關閉</span></div>`;
