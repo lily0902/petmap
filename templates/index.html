@@ -330,7 +330,8 @@ function sendLocationToServer(position) {
             
 google.maps.event.addListener(marker, 'click', () => {
     const service = new google.maps.places.PlacesService(map);
-    
+    // 地圖中心移至該地標，並放大
+
     if (openMarker === marker) {
         // 如果點擊的是當前顯示的標記，則關閉面板
         closeInfoPanel();
@@ -479,6 +480,22 @@ google.maps.event.addListener(marker, 'click', () => {
                         }
                     });
                 });
+                // 監聽搜尋欄文字變化
+        document.getElementById('search-input').addEventListener('input', function() {
+            if (!this.value) {
+                // 清除導航路線、infoWindow 和 marker
+                if (directionsRenderer) {
+                    directionsRenderer.set('directions', null); // 清除路線
+                }
+                if (infoWindow) {
+                    infoWindow.close(); // 關閉 infoWindow
+                }
+                if (marker) {
+                    marker.setMap(null); // 移除 marker
+                    marker = null; // 重設 marker
+                }
+            }
+        });
             });
         }
 
