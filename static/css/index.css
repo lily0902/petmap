@@ -240,6 +240,22 @@ h2 {
   margin-top:30px;
 }
 
+.navigatebutton {
+  background-image: url('../img/navigate.png'); /* 背景圖片 */
+  cursor: pointer; 
+  background-color: transparent;
+  outline: none; 
+  background-size: contain; /* 背景圖片覆蓋整個容器 */
+  width: 200px;  /* 按鈕寬度 */
+  height: 50px;  /* 按鈕高度 */
+  background-repeat: no-repeat; /* 不重複背景圖片 */
+  background-position: center; /* 背景圖片居中顯示 */
+  border: transparent; /* 無邊框 */
+  position:relative;
+  left:25%;
+  margin-top:30px;
+}
+
 /* From Uiverse.io by zjssun */ 
 .button {
   position: fixed;
