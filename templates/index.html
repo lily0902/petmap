@@ -154,6 +154,11 @@ function toggleMarkers(markersArray, shouldShow) {
             if (data.message) {
                 alert(data.message); // 顯示刪除成功訊息
                 closeInfoPanel()
+                // 刪除該標記
+                if (openMarker) {
+                    openMarker.setMap(null); // 從地圖上移除該標記
+                    openMarker = null; // 重置開啟的標記
+                }
             } else if (data.error) {
                 alert(data.error); // 顯示錯誤訊息
             }
@@ -206,6 +211,12 @@ function toggleMarkers(markersArray, shouldShow) {
                 styles: mapStyle, // 自訂地圖樣式 
                 disableDefaultUI: true,
             });
+
+            // 當使用者點擊地圖時隱藏資訊視窗
+            map.addListener("click", () => {
+                closeInfoPanel();
+            });
+
 
             // 取得使用者當前位置 
             navigator.geolocation.getCurrentPosition(function(position) {
