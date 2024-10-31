@@ -104,6 +104,25 @@ function toggleMarkers(markersArray, shouldShow) {
     }
     }
 
+    var customIcon = {
+        url: '../static/img/wanted.png', // 圖片的相對路徑
+        scaledSize: new google.maps.Size(32, 32) // 可調整圖標大小
+    };
+    var customIconhospital = {
+        url: '../static/img/vet.png', // 圖片的相對路徑
+        scaledSize: new google.maps.Size(32, 32) // 可調整圖標大小
+    };
+
+    var customIconrestaurant = {
+        url: '../static/img/restaurant.png', // 圖片的相對路徑
+        scaledSize: new google.maps.Size(32, 32) // 可調整圖標大小
+    };
+
+    var customIconhotel = {
+        url: '../static/img/house.png', // 圖片的相對路徑
+        scaledSize: new google.maps.Size(32, 32) // 可調整圖標大小
+    };
+
     // 從 API 獲取遺失寵物數據並在地圖上顯示
     function fetchLostPets() {
         fetch('/api/pet-lost')
@@ -115,7 +134,7 @@ function toggleMarkers(markersArray, shouldShow) {
                         map: map,
                         position: position,
                         title: `遺失寵物: ${pet.name}`,
-                        icon: 'https://maps.google.com/mapfiles/ms/icons/pink-dot.png'
+                        icon: customIcon,
                     });
     
                     // 為每個標記添加點擊事件
@@ -344,15 +363,19 @@ function sendLocationToServer(position) {
                 // 根據請求結果創建標記
             
 
+                
+
+
             // 創建地圖上的標記並綁定點擊事件
             function createMarker(place, type) {
-                let label;
+                let icon1;
+
                 if (type === '醫院') {
-                    label = 'H'; // 醫院標記
+                    icon1 = customIconhospital
                 } else if (type === '餐廳') {
-                    label = 'R'; // 餐廳標記
+                    icon1 = customIconrestaurant
                 } else if (type === '住宿') {
-                    label = 'S'; // 住宿標記
+                    icon1 = customIconhotel
                 }
     
                 // 創建地標並設定其位置與標記
@@ -360,7 +383,7 @@ function sendLocationToServer(position) {
                     map: map,
                     position: place.geometry.location,
                     title: place.name,
-                    label: label, // 根據類型標記不同字母
+                    icon: icon1, // 根據類型標記不同字母
                 });
 
             // 當用戶點擊標記時顯示資訊面板
