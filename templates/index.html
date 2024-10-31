@@ -114,7 +114,7 @@ function toggleMarkers(markersArray, shouldShow) {
     };
 
     var customIconrestaurant = {
-        url: '../static/img/cafe.png', // 圖片的相對路徑
+        url: '../static/img/restaurant.png', // 圖片的相對路徑
         scaledSize: new google.maps.Size(32, 32) // 可調整圖標大小
     };
 
@@ -316,6 +316,8 @@ function sendLocationToServer(position) {
         };
 
         service.nearbySearch(restaurantRequest, (results, status) => {
+            console.log('搜索餐廳的結果:', results); // 添加這行來檢查結果
+            console.log('API 響應狀態:', status); // 確認狀態
             if (status === google.maps.places.PlacesServiceStatus.OK) {
                 for (let i = 0; i < results.length; i++) {
                     const marker = createMarker(results[i], '餐廳'); // 創建餐廳的地標
