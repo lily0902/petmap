@@ -208,12 +208,12 @@ def templates():
                 cursor.close()
 
                 print("資料連線成功")
-            return render_template("template.html")
+            return render_template("index.html")
     
    
         
         
-    return render_template("template.html")
+    return render_template("index.html")
 
 
 @app.route('/api/pet-lost', methods=['GET'])
