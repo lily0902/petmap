@@ -6,22 +6,14 @@ from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import mysql.connector
 import os
-import requests
 from mysql.connector import connect
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
 
-
-load_dotenv()
-
-# 現在可以通過 os.getenv() 來訪問這些環境變數
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST')
-DB_NAME = os.getenv('DB_NAME')
-
-API_KEY = os.getenv('API_KEY')
-API_URL = os.getenv('API_URL')
+# 定義 MySQL 連接參數
+DB_USER = 'root'          # 例如 'root'
+DB_PASSWORD = '1234'      # 例如 'password'
+DB_HOST = 'localhost'              # 例如 '127.0.0.1'
+DB_NAME = 'pet_database'
 
 # 1. 檢查並建立資料庫
 def initialize_database():
@@ -127,10 +119,10 @@ initialize_database()
 
 # MySQL 資料庫連接配置
 db = mysql.connector.connect(
-    host=DB_HOST,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    database=DB_NAME
+    host="localhost",
+    user="root",
+    password="1234",
+    database="pet_database"
 )
 
 
@@ -153,7 +145,7 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template("index.html", API_KEY=API_KEY)
+    return render_template("index.html")
 
 @app.route('/ad-post')
 def ad_post():
@@ -256,20 +248,6 @@ def delete_lost_pet():
         return jsonify({'error': f'刪除失敗: {e}'}), 500
     finally:
         cursor.close()
-        
-@app.route('/get_data', methods=['GET'])
-def get_data():
-    response = requests.get(API_URL)
-    if response.status_code == 200:
-        try:
-            data = response.json()
-            return jsonify(data)
-        except ValueError:
-            return jsonify({"error": "無法解析 JSON 响應"}), 500
-    else:
-        return jsonify({"error": f"API 請求失敗，狀態碼: {response.status_code}"}), 500
-
-
 
 
 

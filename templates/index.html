@@ -209,14 +209,6 @@ function toggleMarkers(markersArray, shouldShow) {
     }
     
         function initMap() {
-                fetch('/get_data')
-                  .then(response => response.json())
-                  .then(data => {
-                    console.log(data);
-                  })
-                  .catch(error => console.error('Error:', error));
-
-                
             // 自訂地圖樣式，隱藏所有不需要的地標 
             const mapStyle = [
                 {
